@@ -29,3 +29,11 @@ Content-Type: application/json
 ### 1.3 Lister tous les portefeuilles (Paginé)
 GET http://localhost:8080/api/wallets?page=0&size=10
 Content-Type: application/json
+
+### 1.4.1 Consulter un portefeuille existant
+GET http://localhost:8080/api/wallets/+221779998877
+Content-Type: application/json
+
+### 1.4.2 Exemple du sujet (Seeding ou H2 auto-généré)
+GET http://localhost:8080/api/wallets/+221776665544
+Content-Type: application/json

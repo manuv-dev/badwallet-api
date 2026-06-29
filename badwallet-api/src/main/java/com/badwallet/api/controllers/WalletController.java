@@ -44,4 +44,9 @@ public class WalletController {
         Page<WalletDTO> wallets = walletService.getAllWallets(pageable);
         return ResponseEntity.ok(wallets);
     }
+    @GetMapping("/{phoneNumber}")
+    public ResponseEntity<WalletDTO> getWalletByPhone(@PathVariable String phoneNumber) {
+        WalletDTO wallet = walletService.getWalletByPhoneNumber(phoneNumber);
+        return ResponseEntity.ok(wallet);
+    }
 }

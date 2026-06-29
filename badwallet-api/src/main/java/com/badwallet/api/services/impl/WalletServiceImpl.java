@@ -1,6 +1,8 @@
 package com.badwallet.api.services.impl;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+
 import com.badwallet.api.dtos.WalletCreationRequest;
 import com.badwallet.api.dtos.WalletDTO;
 import com.badwallet.api.entities.Wallet;
@@ -9,6 +11,7 @@ import com.badwallet.api.repositories.WalletRepository;
 import com.badwallet.api.services.WalletService;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 @Service
 public class WalletServiceImpl implements WalletService {
 
@@ -54,5 +57,14 @@ public class WalletServiceImpl implements WalletService {
     public Page<WalletDTO> getAllWallets(Pageable pageable) {
         return walletRepository.findAll(pageable)
                 .map(walletMapper::toDto);
+    }
+    @Override
+    public WalletDTO getWalletByPhoneNumber(String phoneNumber) {
+        return walletRepository.findByPhoneNumber(phoneNumber)
+                .map(walletMapper::toDto)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, 
+                        "Portefeuille introuvable pour ce numéro de téléphone : " + phoneNumber
+                ));
     }
 }
