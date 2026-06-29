@@ -2,14 +2,30 @@
 POST http://localhost:8080/api/wallets/seed?numWallets=10&eventsPerWallet=100
 Content-Type: application/json
 
-### 1.2 Créer un nouveau portefeuille
+### 1.2.1 Créer le portefeuille TEST 1
 POST http://localhost:8080/api/wallets
 Content-Type: application/json
 
 {
   "phoneNumber": "+221779998877",
-  "email": "testclient@gmail.com",
+  "email": "testclient1@gmail.com",
   "initialBalance": 25000,
   "code": "WLT-TEST001",
   "currency": "XOF"
 }
+
+### 1.2.2 Créer un autre portefeuille TEST 2
+POST http://localhost:8080/api/wallets
+Content-Type: application/json
+
+{
+  "phoneNumber": "+221776665544",
+  "email": "testclient2@gmail.com",
+  "initialBalance": 50000,
+  "code": "WLT-TEST002",
+  "currency": "XOF"
+}
+
+### 1.3 Lister tous les portefeuilles (Paginé)
+GET http://localhost:8080/api/wallets?page=0&size=10
+Content-Type: application/json

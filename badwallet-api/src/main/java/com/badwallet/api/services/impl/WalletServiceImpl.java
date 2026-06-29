@@ -1,5 +1,6 @@
 package com.badwallet.api.services.impl;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import com.badwallet.api.dtos.WalletCreationRequest;
 import com.badwallet.api.dtos.WalletDTO;
 import com.badwallet.api.entities.Wallet;
@@ -47,5 +48,11 @@ public class WalletServiceImpl implements WalletService {
         Wallet savedWallet = walletRepository.save(walletEntity);
         
         return walletMapper.toDto(savedWallet);
+    }
+
+    @Override
+    public Page<WalletDTO> getAllWallets(Pageable pageable) {
+        return walletRepository.findAll(pageable)
+                .map(walletMapper::toDto);
     }
 }
