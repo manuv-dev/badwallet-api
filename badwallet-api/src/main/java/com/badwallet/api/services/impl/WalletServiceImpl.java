@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 
 import com.badwallet.api.dtos.DepositRequest;
+import com.badwallet.api.dtos.TransferRequest;
 import com.badwallet.api.dtos.WalletCreationRequest;
 import com.badwallet.api.dtos.WalletDTO;
 import com.badwallet.api.dtos.WithdrawRequest;
@@ -132,5 +133,40 @@ public class WalletServiceImpl implements WalletService {
         Wallet updatedWallet = walletRepository.save(wallet);
 
         return walletMapper.toDto(updatedWallet);
+    }
+    @Override
+    @Transactional 
+    public void transfer(TransferRequest request) {
+        if (request.getSenderPhone().equals(request.getReceiverPhone())) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, 
+                    "Le numéro de l'expéditeur et du destinataire doit être différent."
+            );
+        }
+
+        Wallet sender = walletRepository.findByPhoneNumber(request.getSenderPhone())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, 
+                        "Portefeuille expéditeur introuvable."
+                ));
+
+        Wallet receiver = walletRepository.findByPhoneNumber(request.getReceiverPhone())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, 
+                        "Portefeuille destinataire introuvable."
+                ));
+
+        if (sender.getBalance() < request.getAmount()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, 
+                    "Solde insuffisant pour effectuer le transfert."
+            );
+        }
+
+        sender.setBalance(sender.getBalance() - request.getAmount());
+        receiver.setBalance(receiver.getBalance() + request.getAmount());
+
+        walletRepository.save(sender);
+        walletRepository.save(receiver);
     }
 }

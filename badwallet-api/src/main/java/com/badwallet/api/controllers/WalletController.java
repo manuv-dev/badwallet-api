@@ -1,6 +1,7 @@
 package com.badwallet.api.controllers;
 
 import com.badwallet.api.dtos.DepositRequest;
+import com.badwallet.api.dtos.TransferRequest;
 import com.badwallet.api.dtos.WalletCreationRequest;
 import com.badwallet.api.dtos.WalletDTO;
 import com.badwallet.api.dtos.WithdrawRequest;
@@ -69,5 +70,10 @@ public class WalletController {
     public ResponseEntity<WalletDTO> makeWithdraw(@RequestBody WithdrawRequest request) {
         WalletDTO updatedWallet = walletService.withdraw(request);
         return ResponseEntity.ok(updatedWallet);
+    }
+    @PostMapping("/transfer")
+    public ResponseEntity<Map<String, String>> makeTransfer(@RequestBody TransferRequest request) {
+        walletService.transfer(request);
+        return ResponseEntity.ok(Map.of("message", "Transfert effectué avec succès !"));
     }
 }
