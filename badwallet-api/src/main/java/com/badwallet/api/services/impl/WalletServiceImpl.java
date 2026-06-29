@@ -4,8 +4,10 @@ import java.util.Map;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import com.badwallet.api.dtos.DepositRequest;
+import com.badwallet.api.dtos.PaymentRequest;
 import com.badwallet.api.dtos.TransferRequest;
 import com.badwallet.api.dtos.WalletCreationRequest;
 import com.badwallet.api.dtos.WalletDTO;
@@ -19,16 +21,20 @@ import jakarta.transaction.Transactional;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 @Service
 public class WalletServiceImpl implements WalletService {
 
     private final WalletRepository walletRepository;
     private final WalletMapper walletMapper; // Ajout du mapper
+    private final RestTemplate restTemplate;
 
-    public WalletServiceImpl(WalletRepository walletRepository, WalletMapper walletMapper) {
+    // 2. Modifie ton constructeur pour inclure RestTemplate
+    public WalletServiceImpl(WalletRepository walletRepository, WalletMapper walletMapper, RestTemplate restTemplate) {
         this.walletRepository = walletRepository;
         this.walletMapper = walletMapper;
+        this.restTemplate = restTemplate; // Ajouté ici
     }
 
     @Override
@@ -168,5 +174,42 @@ public class WalletServiceImpl implements WalletService {
 
         walletRepository.save(sender);
         walletRepository.save(receiver);
+    }
+    @Override
+    @Transactional
+    public WalletDTO payBill(PaymentRequest request) {
+        // 1. Trouver le portefeuille de l'utilisateur
+        Wallet wallet = walletRepository.findByPhoneNumber(request.getPhoneNumber())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, 
+                        "Portefeuille introuvable."
+                ));
+
+        // 2. Vérifier si le solde est suffisant
+        if (wallet.getBalance() < request.getAmount()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, 
+                    "Solde insuffisant pour régler cette facture."
+            );
+        }
+
+        // 3. Appel de l'URL exacte du second microservice (sur le port 8081)
+        String paymentServiceUrl = "http://localhost:8081/api/pay-factures"; 
+        
+        // On envoie l'objet à payment-service et on attend sa réponse
+        ResponseEntity<Void> response = restTemplate.postForEntity(paymentServiceUrl, request, Void.class);
+        
+        if (!response.getStatusCode().is2xxSuccessful()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_GATEWAY, 
+                    "Le service externe de paiement a refusé la transaction."
+            );
+        }
+
+        // 4. Si l'appel a réussi, on débite localement et on sauvegarde
+        wallet.setBalance(wallet.getBalance() - request.getAmount());
+        Wallet updatedWallet = walletRepository.save(wallet);
+
+        return walletMapper.toDto(updatedWallet);
     }
 }
