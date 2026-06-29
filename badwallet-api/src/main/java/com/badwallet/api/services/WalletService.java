@@ -3,6 +3,7 @@ package com.badwallet.api.services;
 import com.badwallet.api.dtos.DepositRequest;
 import com.badwallet.api.dtos.WalletCreationRequest;
 import com.badwallet.api.dtos.WalletDTO;
+import com.badwallet.api.dtos.WithdrawRequest;
 
 import java.util.Map;
 
@@ -16,4 +17,5 @@ public interface WalletService {
     WalletDTO getWalletByPhoneNumber(String phoneNumber);
     Map<String, Object> getWalletBalance(String phoneNumber);
     WalletDTO deposit(Long id, DepositRequest request);
+    WalletDTO withdraw(WithdrawRequest request);
 }

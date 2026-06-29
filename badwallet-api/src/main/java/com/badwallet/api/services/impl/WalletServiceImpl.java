@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import com.badwallet.api.dtos.DepositRequest;
 import com.badwallet.api.dtos.WalletCreationRequest;
 import com.badwallet.api.dtos.WalletDTO;
+import com.badwallet.api.dtos.WithdrawRequest;
 import com.badwallet.api.entities.Wallet;
 import com.badwallet.api.mappers.WalletMapper;
 import com.badwallet.api.repositories.WalletRepository;
@@ -101,6 +102,35 @@ public class WalletServiceImpl implements WalletService {
         
         Wallet updatedWallet = walletRepository.save(wallet);
         
+        return walletMapper.toDto(updatedWallet);
+    }
+    @Override
+    @Transactional
+    public WalletDTO withdraw(WithdrawRequest request) {
+        Wallet wallet = walletRepository.findByPhoneNumber(request.getPhoneNumber())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, 
+                        "Portefeuille introuvable pour ce numéro"
+                ));
+
+        double fees = request.getAmount() * 0.01;
+        
+        if (fees > 5000.0) {
+            fees = 5000.0;
+        }
+
+        double totalDeduction = request.getAmount() + fees;
+
+        if (wallet.getBalance() < totalDeduction) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, 
+                    "Solde insuffisant pour effectuer le retrait (Montant + Frais = " + totalDeduction + " XOF)"
+            );
+        }
+
+        wallet.setBalance(wallet.getBalance() - totalDeduction);
+        Wallet updatedWallet = walletRepository.save(wallet);
+
         return walletMapper.toDto(updatedWallet);
     }
 }
