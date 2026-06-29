@@ -2,6 +2,7 @@ package com.badwallet.api.controllers;
 
 import com.badwallet.api.dtos.DepositRequest;
 import com.badwallet.api.dtos.PaymentRequest;
+import com.badwallet.api.dtos.SpecificPaymentRequest;
 import com.badwallet.api.dtos.TransferRequest;
 import com.badwallet.api.dtos.WalletCreationRequest;
 import com.badwallet.api.dtos.WalletDTO;
@@ -82,5 +83,9 @@ public class WalletController {
     public ResponseEntity<WalletDTO> payBill(@RequestBody PaymentRequest request) {
         WalletDTO updatedWallet = walletService.payBill(request);
         return ResponseEntity.ok(updatedWallet);
+    }
+    @PostMapping("/pay-factures")
+    public ResponseEntity<WalletDTO> paySpecificBills(@RequestBody SpecificPaymentRequest request) {
+        return ResponseEntity.ok(walletService.paySpecificBills(request));
     }
 }

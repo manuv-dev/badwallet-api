@@ -2,6 +2,7 @@ package com.badwallet.api.services;
 
 import com.badwallet.api.dtos.DepositRequest;
 import com.badwallet.api.dtos.PaymentRequest;
+import com.badwallet.api.dtos.SpecificPaymentRequest;
 import com.badwallet.api.dtos.TransferRequest;
 import com.badwallet.api.dtos.WalletCreationRequest;
 import com.badwallet.api.dtos.WalletDTO;
@@ -22,4 +23,5 @@ public interface WalletService {
     WalletDTO withdraw(WithdrawRequest request);
     void transfer(TransferRequest request);
     WalletDTO payBill(PaymentRequest request);
+    WalletDTO paySpecificBills(SpecificPaymentRequest request);
 }

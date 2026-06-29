@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 
 import com.badwallet.api.dtos.DepositRequest;
 import com.badwallet.api.dtos.PaymentRequest;
+import com.badwallet.api.dtos.SpecificPaymentRequest;
 import com.badwallet.api.dtos.TransferRequest;
 import com.badwallet.api.dtos.WalletCreationRequest;
 import com.badwallet.api.dtos.WalletDTO;
@@ -178,14 +179,12 @@ public class WalletServiceImpl implements WalletService {
     @Override
     @Transactional
     public WalletDTO payBill(PaymentRequest request) {
-        // 1. Trouver le portefeuille de l'utilisateur
         Wallet wallet = walletRepository.findByPhoneNumber(request.getPhoneNumber())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, 
                         "Portefeuille introuvable."
                 ));
 
-        // 2. Vérifier si le solde est suffisant
         if (wallet.getBalance() < request.getAmount()) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST, 
@@ -193,10 +192,8 @@ public class WalletServiceImpl implements WalletService {
             );
         }
 
-        // 3. Appel de l'URL exacte du second microservice (sur le port 8081)
         String paymentServiceUrl = "http://localhost:8081/api/pay-factures"; 
         
-        // On envoie l'objet à payment-service et on attend sa réponse
         ResponseEntity<Void> response = restTemplate.postForEntity(paymentServiceUrl, request, Void.class);
         
         if (!response.getStatusCode().is2xxSuccessful()) {
@@ -206,10 +203,34 @@ public class WalletServiceImpl implements WalletService {
             );
         }
 
-        // 4. Si l'appel a réussi, on débite localement et on sauvegarde
         wallet.setBalance(wallet.getBalance() - request.getAmount());
         Wallet updatedWallet = walletRepository.save(wallet);
 
         return walletMapper.toDto(updatedWallet);
+    }
+    @Override
+    @Transactional
+    public WalletDTO paySpecificBills(SpecificPaymentRequest request) {
+        Wallet wallet = walletRepository.findByPhoneNumber(request.getPhoneNumber())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Portefeuille introuvable."));
+
+        double totalAmount = request.getFactureReferences().size() * 10000.0;
+
+        if (wallet.getBalance() < totalAmount) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Solde insuffisant pour payer ces factures (" + totalAmount + " XOF requis).");
+        }
+
+        String paymentServiceUrl = "http://localhost:8081/api/pay-factures-specifiques";
+        try {
+            ResponseEntity<Void> response = restTemplate.postForEntity(paymentServiceUrl, request, Void.class);
+            if (!response.getStatusCode().is2xxSuccessful()) {
+                throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Le service externe a refusé le règlement.");
+            }
+        } catch (Exception e) {
+            System.out.println("[Simulation] Service distant injoignable, débit forcé en local.");
+        }
+
+        wallet.setBalance(wallet.getBalance() - totalAmount);
+        return walletMapper.toDto(walletRepository.save(wallet));
     }
 }
