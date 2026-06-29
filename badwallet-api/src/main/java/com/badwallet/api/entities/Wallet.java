@@ -2,7 +2,6 @@ package com.badwallet.api.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.math.BigDecimal;
 
 @Entity
 @Table(name = "wallets")

@@ -1,5 +1,6 @@
 package com.badwallet.api.controllers;
 
+import com.badwallet.api.dtos.DepositRequest;
 import com.badwallet.api.dtos.WalletCreationRequest;
 import com.badwallet.api.dtos.WalletDTO;
 import com.badwallet.api.services.WalletService;
@@ -53,5 +54,13 @@ public class WalletController {
     public ResponseEntity<Map<String, Object>> getBalance(@PathVariable String phoneNumber) {
         Map<String, Object> balanceInfo = walletService.getWalletBalance(phoneNumber);
         return ResponseEntity.ok(balanceInfo);
+    }
+
+    @PostMapping("/{id}/deposit")
+    public ResponseEntity<WalletDTO> makeDeposit(
+            @PathVariable Long id, 
+            @RequestBody DepositRequest request) {
+        WalletDTO updatedWallet = walletService.deposit(id, request);
+        return ResponseEntity.ok(updatedWallet);
     }
 }
