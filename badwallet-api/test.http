@@ -1,9 +1,11 @@
+@walletHost = http://localhost:8080
+
 ### 1.1 Seeder la base de données
-POST http://localhost:8080/api/wallets/seed?numWallets=10&eventsPerWallet=100
+POST {{walletHost}}/api/wallets/seed?numWallets=10&eventsPerWallet=100
 Content-Type: application/json
 
 ### 1.2.1 Créer le portefeuille TEST 1
-POST http://localhost:8080/api/wallets
+POST {{walletHost}}/api/wallets
 Content-Type: application/json
 
 {
@@ -15,7 +17,7 @@ Content-Type: application/json
 }
 
 ### 1.2.2 Créer un autre portefeuille TEST 2
-POST http://localhost:8080/api/wallets
+POST {{walletHost}}/api/wallets
 Content-Type: application/json
 
 {
@@ -27,13 +29,17 @@ Content-Type: application/json
 }
 
 ### 1.3 Lister tous les portefeuilles (Paginé)
-GET http://localhost:8080/api/wallets?page=0&size=10
+GET {{walletHost}}/api/wallets?page=0&size=10
 Content-Type: application/json
 
 ### 1.4.1 Consulter un portefeuille existant
-GET http://localhost:8080/api/wallets/+221779998877
+GET {{walletHost}}/api/wallets/+221779998877
 Content-Type: application/json
 
 ### 1.4.2 Exemple du sujet (Seeding ou H2 auto-généré)
-GET http://localhost:8080/api/wallets/+221776665544
+GET {{walletHost}}/api/wallets/+221776665544
+Content-Type: application/json
+
+### 1.5 Consulter uniquement le solde à jour
+GET {{walletHost}}/api/wallets/%2B221779998877/balance
 Content-Type: application/json

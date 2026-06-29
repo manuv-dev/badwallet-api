@@ -1,4 +1,6 @@
 package com.badwallet.api.services.impl;
+import java.util.Map;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -66,5 +68,19 @@ public class WalletServiceImpl implements WalletService {
                         HttpStatus.NOT_FOUND, 
                         "Portefeuille introuvable pour ce numéro de téléphone : " + phoneNumber
                 ));
+    }
+    @Override
+    public Map<String, Object> getWalletBalance(String phoneNumber) {
+        Wallet wallet = walletRepository.findByPhoneNumber(phoneNumber)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, 
+                        "Portefeuille introuvable pour ce numéro"
+                ));
+        
+        // Retourne une structure JSON propre {"phoneNumber": "...", "balance": ...}
+        return Map.of(
+            "phoneNumber", wallet.getPhoneNumber(),
+            "balance", wallet.getBalance()
+        );
     }
 }

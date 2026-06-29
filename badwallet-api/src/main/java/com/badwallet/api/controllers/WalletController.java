@@ -49,4 +49,9 @@ public class WalletController {
         WalletDTO wallet = walletService.getWalletByPhoneNumber(phoneNumber);
         return ResponseEntity.ok(wallet);
     }
+    @GetMapping("/{phoneNumber}/balance")
+    public ResponseEntity<Map<String, Object>> getBalance(@PathVariable String phoneNumber) {
+        Map<String, Object> balanceInfo = walletService.getWalletBalance(phoneNumber);
+        return ResponseEntity.ok(balanceInfo);
+    }
 }
