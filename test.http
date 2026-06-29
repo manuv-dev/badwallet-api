@@ -1,0 +1,2 @@
+POST http://localhost:8080/api/wallets/seed?numWallets=10&eventsPerWallet=100
+Content-Type: application/json
